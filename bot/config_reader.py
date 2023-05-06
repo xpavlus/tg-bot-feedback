@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, Dict
 
-from pydantic import BaseSettings, SecretStr
+from pydantic import BaseSettings, SecretStr, BaseModel
 
 
 class Settings(BaseSettings):
@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     app_host: Optional[str] = "0.0.0.0"
     app_port: Optional[int] = 9000
     custom_bot_api: Optional[str]
+    photo: Optional[Dict[str, str]]
 
     class Config:
         env_file = '.env'

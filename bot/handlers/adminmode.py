@@ -18,10 +18,12 @@ def extract_id(message: Message) -> int:
     :return: ID пользователя, извлечённый из хэштега в сообщении
     """
     # Получение списка сущностей (entities) из текста или подписи к медиафайлу в отвечаемом сообщении
-    entities = message.entities or message.caption_entities
-    # Если всё сделано верно, то последняя (или единственная) сущность должна быть хэштегом...
-    if not entities or entities[-1].type != "hashtag":
+    if not message.entities:
         raise ValueError("Не удалось извлечь ID для ответа!")
+
+    hashtags = []
+
+    entities = message.entities or message.caption_entities
 
     # ... более того, хэштег должен иметь вид #id123456, где 123456 — ID получателя
     hashtag = entities[-1].extract_from(message.text or message.caption)
@@ -31,7 +33,7 @@ def extract_id(message: Message) -> int:
     return int(hashtag[3:])
 
 
-@router.message(Command(commands=["get", "who"]), F.reply_to_message)
+@router.message(Command(commands=["get", "who", "кто"]), F.reply_to_message)
 async def get_user_info(message: Message, bot: Bot, l10n: FluentLocalization):
     """
     Обработчик команд /get и /who. Получает информацию о пользователе.

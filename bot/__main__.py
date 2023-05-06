@@ -17,7 +17,7 @@ from bot.config_reader import config
 async def main():
     # Настройка логирования в stdout
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
 
@@ -26,7 +26,11 @@ async def main():
     # Создание объектов Fluent
     # FluentResourceLoader использует фигурные скобки, поэтому f-strings здесь нельзя
     l10n_loader = FluentResourceLoader(str(locales_dir) + "/{locale}")
-    l10n = FluentLocalization(["ru"], ["strings.ftl", "errors.ftl"], l10n_loader)
+    l10n = FluentLocalization(["ru"], [
+        "strings.ftl",
+        "errors.ftl",
+        "feedback.ftl",
+    ], l10n_loader)
 
     bot = Bot(token=config.bot_token.get_secret_value())
     dp = Dispatcher()
@@ -40,34 +44,9 @@ async def main():
     dp.update.middleware(L10nMiddleware(l10n))
 
     # Регистрация /-команд в интерфейсе
-    await set_bot_commands(bot)
-
+    await set_bot_commands(bot, l10n)
     try:
-        if not config.webhook_domain:
-            await bot.delete_webhook()
-            await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
-        else:
-            # Выключаем логи от aiohttp
-            aiohttp_logger = logging.getLogger("aiohttp.access")
-            aiohttp_logger.setLevel(logging.CRITICAL)
-
-            # Установка вебхука
-            await bot.set_webhook(
-                url=config.webhook_domain + config.webhook_path,
-                drop_pending_updates=True,
-                allowed_updates=dp.resolve_used_update_types()
-            )
-
-            # Создание запуска aiohttp
-            app = web.Application()
-            SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=config.webhook_path)
-            runner = web.AppRunner(app)
-            await runner.setup()
-            site = web.TCPSite(runner, host=config.app_host, port=config.app_port)
-            await site.start()
-
-            # Бесконечный цикл
-            await asyncio.Event().wait()
+        await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
     finally:
         await bot.session.close()
 

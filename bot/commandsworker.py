@@ -1,12 +1,17 @@
 from aiogram import Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault, BotCommandScopeChat
+from fluent.runtime import FluentLocalization
 
 from bot.config_reader import config
 
 
-async def set_bot_commands(bot: Bot):
+async def set_bot_commands(bot: Bot, l10n: FluentLocalization):
     usercommands = [
-        BotCommand(command="help", description="Справка по использованию бота"),
+        # BotCommand(command="bonus", description=l10n.format_value("feedback-done-menu")),
+        # BotCommand(command="rules", description=l10n.format_value("feedback-rules-menu")),
+        # BotCommand(command="info", description="Небольшая информаци о нас"),
+        # BotCommand(command="help", description="Справка по использованию бота"),
+
     ]
     await bot.set_my_commands(usercommands, scope=BotCommandScopeDefault())
 
